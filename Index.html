@@ -1,0 +1,264 @@
+<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: jeden úzký sloupec, strojopisný text, nadpisy podtržené řadou "=" jako na vyleticky.cz */
+:root{
+  --bg:#ffffff; --fg:#161616; --muted:#6a6a6a; --rule:#c9c9c9; --link:#1b4fd1; --sel-bg:#161616; --sel-fg:#ffffff; --soft:#f3f3f1; --warn:#a33a00;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,"Courier New",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg:#121212;--fg:#e9e9e6;--muted:#a0a09b;--rule:#3a3a3a;--link:#8fb0ff;--sel-bg:#e9e9e6;--sel-fg:#121212;--soft:#1c1c1c;--warn:#ff9d6b;color-scheme:dark}
+}
+:root[data-theme="dark"]{--bg:#121212;--fg:#e9e9e6;--muted:#a0a09b;--rule:#3a3a3a;--link:#8fb0ff;--sel-bg:#e9e9e6;--sel-fg:#121212;--soft:#1c1c1c;--warn:#ff9d6b;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--mono);font-size:15px;line-height:1.55;padding-inline:16px;padding-block:28px 48px}
+main{max-width:34rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.15;margin:0 0 4px;font-weight:600}
+h2{font-size:1.05rem;margin:0;font-weight:600;text-wrap:balance}
+.rule::after,h1::after{content:"====================================================================================";display:block;overflow:hidden;white-space:nowrap;color:var(--rule);font-weight:400;line-height:1.2}
+.lead{margin:12px 0 4px}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+a{color:var(--link)}
+section{margin-top:34px}
+.qhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.qlabel{color:var(--muted);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase}
+.help{flex:none;width:34px;height:34px;border:1px solid var(--fg);background:transparent;color:var(--fg);font:inherit;font-weight:600;cursor:pointer;border-radius:0}
+.help[aria-expanded="true"]{background:var(--sel-bg);color:var(--sel-fg)}
+.panel{background:var(--soft);border-left:2px solid var(--fg);padding:10px 12px;margin:12px 0;font-size:.88rem}
+.panel table{width:100%;border-collapse:collapse;margin:6px 0}
+.panel td{padding:3px 0;border-bottom:1px dotted var(--rule)}
+.panel td:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.asof{color:var(--warn);font-size:.82rem;font-weight:600}
+.q{margin:8px 0 12px}
+.parties{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opt{position:relative;text-align:left;font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--fg);padding:11px 10px;min-height:50px;cursor:pointer;border-radius:0}
+.opt.on{background:var(--sel-bg);color:var(--sel-fg)}
+.opt .n{display:none;position:absolute;right:8px;top:6px;font-weight:700}
+.opt.on .n{display:block}
+.link{background:none;border:0;padding:8px 0;font:inherit;color:var(--link);text-decoration:underline;cursor:pointer}
+.yn{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.yn .opt{text-align:center;padding:14px 8px}
+.numrow{display:flex;align-items:center;gap:10px}
+input[type=text]{width:100%;font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--fg);padding:11px 10px;border-radius:0}
+input[type=text]:focus-visible,.opt:focus-visible,.help:focus-visible,.go:focus-visible,.link:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+.go{width:100%;font:inherit;font-weight:600;color:var(--sel-fg);background:var(--sel-bg);border:1px solid var(--sel-bg);padding:15px;margin-top:6px;cursor:pointer;border-radius:0}
+.go:disabled{opacity:.45;cursor:default}
+.msg{min-height:1.5em;margin:10px 0 0}
+.msg.err{color:var(--warn)}
+.locked{border:1px solid var(--fg);padding:12px;margin-top:20px}
+.result pre{white-space:pre-wrap;word-break:break-word;margin:8px 0;background:var(--soft);padding:10px;font:inherit;font-size:.9rem}
+ol.st{padding-left:1.6rem;margin:8px 0}
+ol.st li{padding:2px 0;font-variant-numeric:tabular-nums}
+details{margin-top:34px}
+summary{cursor:pointer;font-weight:600}
+details ul{padding-left:1.1rem;margin:8px 0 0}
+footer{margin-top:40px;color:var(--muted);font-size:.8rem}
+@media (max-width:380px){.parties{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:no-preference){.opt,.go{transition:background .12s}}
+</style>
+</head><body>
+<main>
+  <h1>Volební tipovačka</h1>
+  <p class="lead">Komunální a senátní volby, 9.–10. října 2026.</p>
+  <p class="muted small" id="deadlineLine">Tipy posílejte do pátku 9. 10. 2026 do 24:00.</p>
+
+    <div id="locked" class="locked" hidden></div>
+
+  <div id="form">
+  <section>
+    <div class="qhead"><div><div class="qlabel">Tip 1</div><h2>Pořadí prvních pěti stran v Praze</h2></div><button class="help" type="button" data-help="praha" aria-expanded="false" aria-label="Nápověda k tipu 1">?</button></div>
+    <div class="rule"></div>
+    <div class="panel" id="p-praha" hidden></div>
+    <p class="q muted small">Zastupitelstvo hl. m. Prahy. Strany vybírejte v pořadí od prvního místa. Opětovným výběrem se strana odebere.</p>
+    <div class="parties" id="parties"></div>
+    <button class="link" id="resetRank" type="button">Vynulovat pořadí</button>
+  </section>
+
+  <section>
+    <div class="qhead"><div><div class="qlabel">Tip 2</div><h2>Procento vítězné strany v Praze</h2></div><button class="help" type="button" data-help="procento" aria-expanded="false" aria-label="Nápověda k tipu 2">?</button></div>
+    <div class="rule"></div>
+    <div class="panel" id="p-procento" hidden></div>
+    <p class="q muted small">Podíl hlasů strany, která v Praze zvítězí.</p>
+    <div class="numrow"><input id="pct" type="text" inputmode="decimal" autocomplete="off" placeholder="např. 27,5"><span>%</span></div>
+  </section>
+
+  <section>
+    <div class="qhead"><div><div class="qlabel">Bonus A</div><h2>Volební účast v Praze (Magistrát)</h2></div><button class="help" type="button" data-help="ucast" aria-expanded="false" aria-label="Nápověda k bonusu A">?</button></div>
+    <div class="rule"></div>
+    <div class="panel" id="p-ucast" hidden></div>
+    <p class="q muted small">Účast ve volbách do zastupitelstva hl. m. Prahy.</p>
+    <div class="numrow"><input id="turnout" type="text" inputmode="decimal" autocomplete="off" placeholder="např. 41,3"><span>%</span></div>
+  </section>
+
+  <section>
+    <div class="qhead"><div><div class="qlabel">Bonus B</div><h2>Senát, obvod č. 3 – Cheb</h2></div><button class="help" type="button" data-help="cheb" aria-expanded="false" aria-label="Nápověda k bonusu B">?</button></div>
+    <div class="rule"></div>
+    <div class="panel" id="p-cheb" hidden></div>
+    <p class="q">Vyhraje Sandra Tsoukernik (ANO, s podporou Michala Davida) první kolo? <span class="muted small">Rozhoduje první místo v prvním kole, nikoli zvolení do Senátu.</span></p>
+    <div class="yn"><button class="opt" type="button" data-yn="ano">Ano</button><button class="opt" type="button" data-yn="ne">Ne</button></div>
+  </section>
+
+  <section>
+    <h2>Jméno</h2>
+    <div class="rule"></div>
+    <p class="q"><input id="name" type="text" autocomplete="name" placeholder="Jméno nebo přezdívka"></p>
+    <button class="go" id="save" type="button">Uložit tip</button>
+    <div class="msg" id="msg" role="status"></div>
+    <div class="result" id="fallback" hidden>
+      <div class="muted small">Tip se nepodařilo uložit přímo. Zkopírujte jej a pošlete mi ho.</div>
+      <pre id="fbText"></pre>
+      <button class="link" id="copy" type="button">Zkopírovat text</button>
+    </div>
+  </section>
+  </div>
+
+  <details>
+    <summary>Pravidla a bodování</summary>
+    <ul>
+      <li>Pořadí pěti stran: 2 body za stranu na správném místě, 1 bod za stranu z první pětky na jiném místě (nejvýše 10 bodů).</li>
+      <li>Procento vítěze: odchylka do 0,5 p. b. = 5 bodů, do 1,5 = 3 body, do 3 = 1 bod.</li>
+      <li>Účast v Praze: stejné bodování jako u procenta vítěze.</li>
+      <li>Cheb: správný tip = 3 body.</li>
+      <li>Při shodě rozhoduje menší odchylka u účasti v Praze.</li>
+      <li>Vyhodnocení proběhne po sečtení hlasů v sobotu 10. 10. odpoledne. Cheb se posuzuje podle výsledku prvního kola.</li>
+    </ul>
+  </details>
+
+  <footer>
+    Kurzy v nápovědě jsou informativní a pocházejí z ifortuna.cz/sazeni/politika k datu uvedenému u každé nápovědy. Hraje se pouze pro zábavu, popř. pomazánku.<br>est. 2026
+  </footer>
+</main>
+
+<script>
+const ENDPOINT="https://script.google.com/macros/u/1/s/AKfycbyu2LkTVtc51TR2n2jQq-YOW4pjLsJ3hOIqn8Jz3SQWZ87-w92ziGvNh3BO6I8GonEy/exec";
+const PARTIES=["SPOLU pro Prahu","STAROSTOVÉ a NEZÁVISLÍ","ANO 2011","PRAHA SOBĚ","Piráti","Motoristé sobě","SPD pro Prahu","Jiná strana"];
+const ASOF="8. 10. 2026";
+const DEADLINE=Date.parse("2026-10-09T23:59:59+02:00");
+
+const HELP={
+  praha:{odds:[["SPOLU pro Prahu","1,80"],["STAROSTOVÉ a NEZÁVISLÍ","2,25"],["ANO 2011","4,50"],["PRAHA SOBĚ","13,00"],["Česká pirátská strana","15,00"],["Motoristé sobě","100,00"],["SPD pro Prahu","100,00"]],label:"Kurzy Fortuny na vítěze voleb do zastupitelstva hl. m. Prahy",
+    text:"Fortuna považuje za favorita koalici SPOLU, těsně za ní STAN a ANO. Kurzy existují jen na vítěze, pořadí na čtvrtém a pátém místě je třeba odhadnout.<br><br>Zářijový průzkum agentury Median vypadal jinak: ANO 23,3 %, STAN 22,6 %, SPOLU 13,9 %, Praha sobě 12,9 %, Piráti 10,8 %, SPD 5,4 %, Motoristé 5,0 %. Pětina voličů byla nerozhodnutá."},
+  procento:{odds:[["SPOLU pro Prahu","1,80"],["STAROSTOVÉ a NEZÁVISLÍ","2,25"],["ANO 2011","4,50"]],label:"Kurzy Fortuny na vítěze (tři nejvyšší)",
+    text:"Sázku na procento Fortuna nenabízí. Průzkumy přisuzovaly vítězi zhruba 23 % (Median, září) až 34 % (Phoenix Research, léto). Čím vyrovnanější souboj, tím nižší číslo vítěze."},
+  ucast:{odds:[],label:"",
+    text:"Na účast Fortuna kurzy nenabízí. Při komunálních volbách v roce 2022 dosáhla účast v Praze 43,91 %. Volební místnosti jsou otevřené v pátek 14–22 a v sobotu 8–14."},
+  cheb:{odds:[["Tsoukernik S. (ANO)","1,50"],["Plevný M. (STAN, současný senátor)","2,25"],["Černá Š.","13,00"],["Keblúšek V.","20,00"],["Reis I.","30,00"],["Hojda P.","50,00"]],label:"Kurzy Fortuny na vítěze obvodu",
+    text:"Fortuna považuje Tsoukernik za favoritku, Plevný je ale silný soupeř a v roce 2020 obvod vyhrál. Tip se týká pouze prvního místa v prvním kole."}
+};
+
+const $=s=>document.querySelector(s);
+const esc=t=>String(t).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const fmt=x=>String(x).replace(".",",");
+const parseNum=v=>parseFloat(String(v).trim().replace(",","."));
+const sget=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const sset=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+
+let ranking=[], cheb=null, tipRef=null, uid=null, text="";
+const closed=()=>Date.now()>DEADLINE;
+
+// nápověda
+Object.entries(HELP).forEach(([k,h])=>{
+  let html="";
+  if(h.odds.length){
+    html+=`<div class="asof">Kurzy k ${ASOF}</div><div class="muted">${h.label}</div><table>`+h.odds.map(o=>`<tr><td>${esc(o[0])}</td><td>${o[1]}</td></tr>`).join("")+`</table>`;
+  } else html+=`<div class="asof">Údaje k ${ASOF}</div>`;
+  html+=`<div>${h.text}</div>`;
+  $("#p-"+k).innerHTML=html;
+});
+document.querySelectorAll("[data-help]").forEach(b=>b.onclick=()=>{
+  const p=$("#p-"+b.dataset.help), open=p.hidden;
+  p.hidden=!open; b.setAttribute("aria-expanded",String(open));
+});
+
+// strany
+const box=$("#parties");
+PARTIES.forEach(p=>{
+  const b=document.createElement("button");
+  b.type="button"; b.className="opt"; b.dataset.p=p;
+  b.innerHTML=`<span>${esc(p)}</span><span class="n"></span>`;
+  b.onclick=()=>{
+    const i=ranking.indexOf(p);
+    if(i>=0) ranking.splice(i,1); else if(ranking.length<5) ranking.push(p);
+    paintRank();
+  };
+  box.appendChild(b);
+});
+function paintRank(){
+  box.querySelectorAll(".opt").forEach(b=>{
+    const i=ranking.indexOf(b.dataset.p);
+    b.classList.toggle("on",i>=0);
+    b.querySelector(".n").textContent=i>=0?i+1:"";
+  });
+}
+$("#resetRank").onclick=()=>{ranking=[];paintRank()};
+
+function paintYN(){document.querySelectorAll("[data-yn]").forEach(b=>b.classList.toggle("on",b.dataset.yn===cheb))}
+document.querySelectorAll("[data-yn]").forEach(b=>b.onclick=()=>{cheb=b.dataset.yn;paintYN()});
+
+$("#name").value=sget("tip_name")||"";
+
+function summary(t){
+  return `Praha, pořadí:\n`+t.ranking.map((p,i)=>`${i+1}. ${p}`).join("\n")+`\n\nVítěz Prahy: ${fmt(t.pct)} %\nÚčast v Praze: ${fmt(t.turnout)} %\nCheb, Tsoukernik první v 1. kole: ${t.cheb==="ano"?"ano":"ne"}`;
+}
+function fillFrom(t){
+  ranking=(t.ranking||[]).slice(0,5); paintRank();
+  $("#pct").value=fmt(t.pct); $("#turnout").value=fmt(t.turnout);
+  cheb=t.cheb; paintYN();
+  if(t.name) $("#name").value=t.name;
+}
+function showMsg(t,err){const m=$("#msg");m.textContent=t;m.className="msg"+(err?" err":"")}
+
+function applyClosed(tip){
+  if(!closed()) return;
+  $("#form").hidden=true;
+  const l=$("#locked"); l.hidden=false;
+  l.innerHTML=tip?`<b>Příjem tipů je uzavřen.</b><pre style="white-space:pre-wrap;font:inherit;margin:8px 0 0">${esc(tip.name)}\n\n${esc(summary(tip))}</pre>`:`<b>Příjem tipů je uzavřen.</b> Tip od vás nebyl uložen.`;
+}
+
+function save(){
+  if(closed()){applyClosed(null);return}
+  const name=$("#name").value.trim(), pct=parseNum($("#pct").value), t=parseNum($("#turnout").value);
+  let err="";
+  if(ranking.length<5) err=`Vyberte pět stran v pořadí (zbývá ${5-ranking.length}).`;
+  else if(!(pct>0&&pct<=100)) err="Doplňte procento vítěze, např. 27,5.";
+  else if(!(t>0&&t<=100)) err="Doplňte volební účast, např. 41,3.";
+  else if(!cheb) err="Vyberte ano nebo ne u Chebu.";
+  else if(!name) err="Doplňte jméno.";
+  if(err){showMsg(err,true);return}
+  sset("tip_name",name);
+  const tip={name,ranking:ranking.slice(),pct,turnout:t,cheb};
+  $("#save").disabled=true; showMsg("Ukládám…");
+  fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(tip)})
+    .then(r=>r.json())
+    .then(r=>{
+      $("#save").disabled=false;
+      if(r&&r.closed){applyClosed(tip);return}
+      if(!r||!r.ok) throw new Error("save");
+      sset("tip_saved",JSON.stringify(tip));
+      $("#fallback").hidden=true;
+      showMsg("Tip je uložen.");
+    })
+    .catch(()=>{
+      $("#save").disabled=false;
+      text=`Tip na volby 2026 – ${name}\n\n`+summary(tip);
+      $("#fbText").textContent=text; $("#fallback").hidden=false;
+      showMsg("Uložení se nezdařilo.",true);
+    });
+}
+$("#save").onclick=save;
+$("#copy").onclick=async()=>{
+  try{await navigator.clipboard.writeText(text);$("#copy").textContent="Zkopírováno"}
+  catch(e){const r=document.createRange();r.selectNodeContents($("#fbText"));const s=getSelection();s.removeAllRanges();s.addRange(r);$("#copy").textContent="Text je označen, zkopírujte jej ručně"}
+};
+
+(function init(){
+  if(closed()) applyClosed(null);
+  setInterval(()=>{if(closed()&&$("#form").hidden===false) applyClosed(null)},30000);
+  try{
+    const t=JSON.parse(sget("tip_saved")||"null");
+    if(t&&t.ranking){fillFrom(t); }
+  }catch(e){}
+})();
+</script>
+</body></html>
