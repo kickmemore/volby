@@ -1,4 +1,5 @@
-<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!doctype html>
+<!-- verze: v4 2026-10-08 --><html lang="cs"><head><meta charset="utf-8"><meta name="verze" content="v4"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap">
 <style>
 /* Layout: jeden úzký sloupec, strojopisný text, nadpisy podtržené řadou "=" jako na vyleticky.cz */
@@ -131,6 +132,8 @@ footer{margin-top:40px;color:var(--muted);font-size:.8rem}
 </main>
 
 <script>
+const VERZE="v4";
+console.info("tipovacka",VERZE);
 const ENDPOINT="https://script.google.com/macros/s/AKfycbyu2LkTVtc51TR2n2jQq-YOW4pjLsJ3hOIqn8Jz3SQWZ87-w92ziGvNh3BO6I8GonEy/exec";
 const PARTIES=["SPOLU pro Prahu","STAROSTOVÉ a NEZÁVISLÍ","ANO 2011","PRAHA SOBĚ","Piráti","Motoristé sobě","SPD pro Prahu","Jiná strana"];
 const ASOF="8. 10. 2026";
@@ -234,16 +237,16 @@ function save(){
     .then(r=>{
       $("#save").disabled=false;
       if(r&&r.closed){applyClosed(tip);return}
-      if(!r||!r.ok) throw new Error("save");
+      if(!r||!r.ok) throw new Error((r&&r.error)||"odpověď bez potvrzení");
       sset("tip_saved",JSON.stringify(tip));
       $("#fallback").hidden=true;
       showMsg("Tip je uložen.");
     })
-    .catch(()=>{
+    .catch(e=>{
       $("#save").disabled=false;
       text=`Tip na volby 2026 – ${name}\n\n`+summary(tip);
       $("#fbText").textContent=text; $("#fallback").hidden=false;
-      showMsg("Uložení se nezdařilo.",true);
+      showMsg("Uložení se nezdařilo ("+VERZE+": "+((e&&e.message)||"neznámá chyba")+").",true);
     });
 }
 $("#save").onclick=save;
