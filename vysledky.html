@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Volební tipovačka 2026 – výsledky</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap">
+<style>
+/* Layout: jeden sloupec, nahoře stupně vítězů, pod nimi skutečné výsledky a rozpis bodů */
+:root{
+  --bg:#ffffff; --fg:#161616; --muted:#6a6a6a; --rule:#c9c9c9; --soft:#f3f3f1;
+  --gold:#b8860b; --silver:#8a8d93; --bronze:#a8643a; --link:#1b4fd1;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,"Courier New",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg:#121212;--fg:#e9e9e6;--muted:#a0a09b;--rule:#3a3a3a;--soft:#1c1c1c;--gold:#e2b43c;--silver:#b4b7be;--bronze:#d08a5c;color-scheme:dark}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:28px 48px}
+main{max-width:40rem;margin:0 auto}
+h1{font-size:1.8rem;line-height:1.15;margin:0 0 4px;font-weight:700}
+h2{font-size:1rem;margin:0 0 8px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.eq{color:var(--rule);overflow:hidden;white-space:nowrap;line-height:1.2;margin:0 0 6px}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+section{margin-top:40px}
+
+/* stupně vítězů: nejdřív neutrální sloupce v pořadí odevzdání, po sečtení se přeskupí na stupně */
+.count{margin-top:22px;display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.count .st{font-weight:700;font-variant-numeric:tabular-nums}
+.bar{height:6px;background:var(--rule);margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:var(--fg);transform-origin:left;transform:scaleX(var(--p,1))}
+
+.podium{--p:1;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;align-items:end;margin-top:26px}
+.slot{display:flex;flex-direction:column;align-items:center;min-width:0}
+.s2{order:1;--v:.933;--ph:108px;--medal:var(--silver)}
+.s1{order:2;--v:1;--ph:150px;--medal:var(--gold)}
+.s3{order:3;--v:.467;--ph:78px;--medal:var(--bronze)}
+.podium.chart .s3{order:1}
+.podium.chart .s1{order:2}
+.podium.chart .s2{order:3}
+.who{text-align:center;padding:0 2px 8px;min-width:0}
+.who .nm{font-weight:700;font-size:1.05rem;overflow-wrap:anywhere}
+.who .pts{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.s1 .nm{font-size:1.2rem}
+.crown{font-size:1.9rem;line-height:1;margin-bottom:2px}
+.step{width:100%;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding-top:10px;color:#fff;font-weight:700;font-size:2.4rem;line-height:1;
+  height:var(--ph);background:var(--medal)}
+.step small{font-size:.75rem;font-weight:600;letter-spacing:.06em;margin-top:6px;opacity:.9}
+.rk{transition:opacity .6s .5s}
+/* během sčítání: obyčejné neutrální sloupce */
+.podium.chart .step{height:calc(150px * var(--v) * var(--p));background:var(--muted)}
+.podium.chart .rk{opacity:0;transition:none}
+/* přechod ze sloupců na stupně */
+.podium.settle .step{transition:height 1s cubic-bezier(.55,0,.2,1),background 1s}
+.crown,.tag{transition:opacity .5s}
+.loading .crown,.loading .tag{opacity:0}
+.base{height:6px;background:var(--fg)}
+.tag{display:inline-block;border:1px solid var(--fg);padding:2px 8px;font-size:.8rem;font-weight:600;margin-top:10px}
+.replay{margin-top:10px;background:none;border:0;padding:6px 0;font:inherit;font-size:.85rem;color:var(--link);text-decoration:underline;cursor:pointer}
+
+/* skutečné výsledky */
+.actual{background:var(--soft);padding:14px}
+.rank{display:grid;grid-template-columns:1.6rem 1fr auto;gap:6px 10px;align-items:baseline;margin:6px 0 0;padding:0;list-style:none}
+.rank li{display:contents}
+.rank .n{font-weight:700}
+.rank .pc{font-variant-numeric:tabular-nums;color:var(--muted)}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.fact{border-top:1px solid var(--rule);padding-top:8px}
+.fact b{display:block;font-size:1.4rem;font-variant-numeric:tabular-nums}
+.fact.wide{grid-column:1/-1}
+
+/* rozpis bodů */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{padding:8px 6px;text-align:right;border-bottom:1px solid var(--rule);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+td.tot{font-weight:700}
+.tip{display:block;font-size:.75rem;color:var(--muted)}
+footer{margin-top:40px;color:var(--muted);font-size:.8rem}
+@media (max-width:400px){
+  .who .nm{font-size:.95rem}
+  .step{font-size:2rem}
+}
+</style>
+</head>
+<body>
+<main>
+  <h1>Volební tipovačka 2026</h1>
+  <div class="eq" aria-hidden="true">====================================================================================</div>
+  <p class="muted small" style="margin:6px 0 0">Komunální a senátní volby, 9.–10. října 2026. Výsledky soutěže.</p>
+
+  <div id="live">
+    <div class="count"><span class="muted small">Sečteno hlasovacích lístků</span><span class="st" id="pctTxt">100 %</span></div>
+    <div class="bar" id="bar"><i></i></div>
+  </div>
+
+  <div class="podium final" id="podium" role="img" aria-label="Stupně vítězů: 1. Nataša 15 bodů, 2. ondar 14 bodů, 3. RNj 7 bodů">
+    <div class="slot s2">
+      <div class="who"><div class="nm">ondar</div><div class="pts"><span data-pts="14">14</span> bodů</div></div>
+      <div class="step"><span class="rk">2</span><small class="rk">MÍSTO</small></div>
+    </div>
+    <div class="slot s1">
+      <div class="who"><div class="crown" aria-hidden="true">♛</div><div class="nm">Nataša</div><div class="pts"><span data-pts="15">15</span> bodů</div></div>
+      <div class="step"><span class="rk">1</span><small class="rk">MÍSTO</small></div>
+    </div>
+    <div class="slot s3">
+      <div class="who"><div class="nm">RNj</div><div class="pts"><span data-pts="7">7</span> bodů</div></div>
+      <div class="step"><span class="rk">3</span><small class="rk">MÍSTO</small></div>
+    </div>
+  </div>
+  <div class="base"></div>
+  <div style="text-align:center" id="tagWrap"><span class="tag">Vítězí Nataša. Rozhodlo trefené procento vítěze.</span><br><button class="replay" id="replay" type="button">Přehrát sčítání znovu</button></div>
+
+  <section>
+    <h2>Jak to dopadlo</h2>
+    <div class="eq" aria-hidden="true">====================================================================================</div>
+    <div class="actual">
+      <div class="muted small">Praha, zastupitelstvo hl. m. Prahy</div>
+      <ol class="rank">
+        <li><span class="n">1.</span><span>STAROSTOVÉ a NEZÁVISLÍ</span><span class="pc">23,17 %</span></li>
+        <li><span class="n">2.</span><span>SPOLU pro Prahu</span><span class="pc">22,05 %</span></li>
+        <li><span class="n">3.</span><span>PRAHA SOBĚ</span><span class="pc">17,91 %</span></li>
+        <li><span class="n">4.</span><span>ANO 2011</span><span class="pc">14,36 %</span></li>
+        <li><span class="n">5.</span><span>Česká pirátská strana</span><span class="pc">9,38 %</span></li>
+      </ol>
+      <div class="facts">
+        <div class="fact"><span class="muted small">Vítěz Prahy</span><b>23,17 %</b></div>
+        <div class="fact"><span class="muted small">Účast v Praze</span><b>46,04 %</b></div>
+        <div class="fact wide"><span class="muted small">Senát, obvod č. 3 – Cheb, 1. kolo</span>
+          <div>1. Plevný (STAN) 40,08 %, 2. Tsoukernik (ANO) 27,08 %, 3. Černá (VOK) 12,30 %</div>
+          <div class="muted small">Tsoukernik první kolo nevyhrála, správný tip byl „ne".</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Rozpis bodů</h2>
+    <div class="eq" aria-hidden="true">====================================================================================</div>
+    <div class="tw">
+    <table>
+      <thead><tr><th>Soutěžící</th><th>Pořadí</th><th>Vítěz %</th><th>Účast</th><th>Cheb</th><th>Σ</th></tr></thead>
+      <tbody>
+        <tr><td>Nataša</td><td>6</td><td>5<span class="tip">tip 23 %</span></td><td>1<span class="tip">tip 44 %</span></td><td>3<span class="tip">ne</span></td><td class="tot">15</td></tr>
+        <tr><td>ondar</td><td>7</td><td>1<span class="tip">tip 21,1 %</span></td><td>3<span class="tip">tip 44,88 %</span></td><td>3<span class="tip">ne</span></td><td class="tot">14</td></tr>
+        <tr><td>RNj</td><td>7</td><td>0<span class="tip">tip 19 %</span></td><td>0<span class="tip">tip 52,3 %</span></td><td>0<span class="tip">ano</span></td><td class="tot">7</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="muted small" style="margin-top:12px">Pořadí: 2 body za správné místo, 1 bod za stranu z první pětky na jiném místě. Procento a účast: odchylka do 0,5 p. b. = 5 bodů, do 1,5 = 3, do 3 = 1. Cheb: 3 body.</p>
+  </section>
+
+  <footer>Zdroje výsledků: ČSÚ (volby.cz). Hraje se pouze pro zábavu, popř. pomazánku.<br>est. 2026</footer>
+</main>
+<script>
+(function(){
+  const pod=document.getElementById("podium"), txt=document.getElementById("pctTxt"),
+        bar=document.getElementById("bar"), nums=pod.querySelectorAll("[data-pts]"),
+        slots=[...pod.querySelectorAll(".slot")];
+  const reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const DUR=7500;
+  let raf=0, tm=0;
+  const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  function set(p){
+    pod.style.setProperty("--p",p/100);
+    bar.style.setProperty("--p",p/100);
+    txt.textContent=(p>=99.95?"100":p.toFixed(1).replace(".",","))+" %";
+    nums.forEach(n=>n.textContent=Math.round(n.dataset.pts*p/100));
+  }
+  function settle(){
+    const before=slots.map(s=>s.getBoundingClientRect().left);
+    pod.classList.remove("chart"); pod.classList.add("settle","final");
+    pod.style.setProperty("--p",1);
+    slots.forEach((s,i)=>{
+      const dx=before[i]-s.getBoundingClientRect().left;
+      s.style.transition="none"; s.style.transform="translateX("+dx+"px)";
+    });
+    void pod.offsetWidth;
+    slots.forEach(s=>{s.style.transition="transform 1s cubic-bezier(.55,0,.2,1)"; s.style.transform="none"});
+    tm=setTimeout(()=>{document.body.classList.remove("loading");pod.classList.remove("settle")},1100);
+  }
+  function run(){
+    cancelAnimationFrame(raf); clearTimeout(tm);
+    slots.forEach(s=>{s.style.transition="none";s.style.transform="none"});
+    if(reduce){pod.className="podium final";set(100);document.body.classList.remove("loading");return}
+    document.body.classList.add("loading");
+    pod.className="podium chart"; set(0);
+    const t0=performance.now();
+    (function frame(now){
+      const t=Math.min(1,(now-t0)/DUR);
+      set(ease(t)*100);
+      if(t<1) raf=requestAnimationFrame(frame); else tm=setTimeout(settle,800);
+    })(t0);
+  }
+  document.getElementById("replay").onclick=run;
+  run();
+})();
+</script>
+</body>
+</html>
